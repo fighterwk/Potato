@@ -43,30 +43,6 @@ class MainFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         viewModel.init(requireContext())
-        viewModel.mPlayStateLiveData.observe(this, Observer {
-            if (it.state == PlaybackStateCompat.STATE_PLAYING) {
-                mf_to_play.text = "暂停"
-                mPlayState = it
-                mf_tv_seek.progress = it.position.toInt()
-                handler.sendEmptyMessageDelayed(1, 250)
-
-            } else {
-                mf_to_play.text = "播放"
-                handler.removeMessages(1)
-
-            }
-        })
-        viewModel.mMetaDataLiveData.observe(this, Observer {
-            val title = it.getString(MediaMetadataCompat.METADATA_KEY_TITLE)
-            val singer = it.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
-            val duration = it.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)
-            val durationShow = "${duration / 60000}: ${duration / 1000 % 60}"
-            mf_tv_title.text = "标题：$title"
-            mf_tv_singer.text = "歌手：$singer"
-            mf_tv_progress.text = "时长：$durationShow"
-            mMusicAdapter.notifyPlayingMusic(it.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID))
-            mf_tv_seek.max = duration.toInt()
-        })
         viewModel.mMusicsLiveData.observe(this, Observer {
             mMusicAdapter.setList(it)
         })
@@ -110,6 +86,34 @@ class MainFragment : Fragment() {
         recycler.layoutManager = LinearLayoutManager(requireContext())
         recycler.setHasFixedSize(true)
         recycler.adapter = mMusicAdapter
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.mPlayStateLiveData.observe(this, Observer {
+            if (it.state == PlaybackStateCompat.STATE_PLAYING) {
+                mf_to_play.text = "暂停"
+                mPlayState = it
+                mf_tv_seek.progress = it.position.toInt()
+                handler.sendEmptyMessageDelayed(1, 250)
+
+            } else {
+                mf_to_play.text = "播放"
+                handler.removeMessages(1)
+
+            }
+        })
+        viewModel.mMetaDataLiveData.observe(this, Observer {
+            val title = it.getString(MediaMetadataCompat.METADATA_KEY_TITLE)
+            val singer = it.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
+            val duration = it.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)
+            val durationShow = "${duration / 60000}: ${duration / 1000 % 60}"
+            mf_tv_title.text = "标题：$title"
+            mf_tv_singer.text = "歌手：$singer"
+            mf_tv_progress.text = "时长：$durationShow"
+            mMusicAdapter.notifyPlayingMusic(it.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID))
+            mf_tv_seek.max = duration.toInt()
+        })
     }
 
     inner class MusicAdapter: RecyclerView.Adapter<MusicViewHolder>() {
